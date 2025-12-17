@@ -132,7 +132,7 @@ export class LAppLive2DManager {
   /**
    * 씬 변경
    */
-  private changeScene(index: number): void {
+  public changeScene(index: number): void {
     this._sceneIndex = index;
 
     if (LAppDefine.DebugLogEnable) {
@@ -344,6 +344,10 @@ export class LAppLive2DManager {
 
   public getFrameBuffer(): WebGLFramebuffer | null {
     return this._frameBuffer;
+  }
+
+  public getSceneIndex(): number {
+    return this._sceneIndex;
   }
 }
 

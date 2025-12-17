@@ -46,6 +46,45 @@ body {
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* 모델 선택 버튼 */
+.model-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.model-btn {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.model-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.model-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, #e94560, #ff6b9d);
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+}
+
+.model-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+}
+
 .live2d-container {
   flex: 1;
   display: flex;
@@ -87,6 +126,17 @@ body {
   }
 
   .app-header .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .model-selector {
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .model-btn {
+    padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
 

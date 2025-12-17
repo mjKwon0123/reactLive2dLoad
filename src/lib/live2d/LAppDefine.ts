@@ -26,7 +26,7 @@ export const ViewLogicalMaxTop = 2.0;
 export const ResourcesPath = '/';
 
 // 모델 정의
-export const ModelDir: string[] = ['Haru'];
+export const ModelDir: string[] = ['Haru', 'Mao', 'Hiyori'];
 export const ModelDirSize: number = ModelDir.length;
 
 // 모션 그룹

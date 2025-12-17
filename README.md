@@ -1,6 +1,6 @@
 # Live2D Cubism React Integration
 
-A complete implementation of Live2D Cubism SDK for Web integrated into a React + TypeScript + Vite application. This project demonstrates how to display interactive Live2D models in a modern React environment with a focus on security considerations for user-uploaded content.
+A complete implementation of Live2D Cubism SDK for Web integrated into a React + TypeScript + Vite application. This project demonstrates how to display interactive Live2D models in a modern React environment with model switching, secure asset loading, and tools for processing Cubism Editor exports.
 
 ![Live2D Demo](https://img.shields.io/badge/Live2D-Cubism%205.0-ff69b4)
 ![React](https://img.shields.io/badge/React-19-61dafb)
@@ -10,11 +10,13 @@ A complete implementation of Live2D Cubism SDK for Web integrated into a React +
 ## ✨ Features
 
 - 🎭 **Live2D Model Rendering** - Full support for Cubism 5.0 models
+- 🔄 **Model Switching** - Switch between multiple models with UI buttons
 - 🖱️ **Interactive Controls** - Mouse tracking for eye/head movement
 - 👆 **Touch/Click Interactions** - Trigger motions and expressions
 - 😊 **Automatic Animations** - Eye blinking, breathing, idle motions
 - 🔒 **Secure Asset Loading** - Models loaded from `src/assets` with hashed URLs
-- ⚛️ **React Component** - Easy-to-use `<Live2DViewer />` component
+- ⚛️ **React Component** - Easy-to-use `<Live2DViewer />` component with ref support
+- 🛠️ **Model Organizer Script** - Convert Cubism Editor exports to web-ready format
 - 📦 **Self-Contained** - No external SDK dependencies required
 
 ## 🚀 Quick Start
@@ -30,33 +32,42 @@ npm run dev
 npm run build
 ```
 
+## 📸 Demo
+
+The demo includes 3 sample models with instant switching:
+
+| Haru | Mao | Hiyori |
+|------|-----|--------|
+| SDK sample model | Wizard character | Student character |
+
+Click on models to trigger motions and expressions!
+
 ## 📁 Project Structure
 
 ```
 frontend/
 ├── public/
 │   └── live2dcubismcore.min.js  # Live2D Core library
+├── scripts/
+│   └── organize-model.js        # 🆕 Model conversion script
 ├── src/
 │   ├── assets/
-│   │   └── Haru/                 # Model files (managed here!)
-│   │       ├── Haru.model3.json
-│   │       ├── Haru.moc3
-│   │       ├── Haru.2048/        # Textures
-│   │       ├── expressions/      # Expression files
-│   │       └── motions/          # Motion files
+│   │   ├── Haru/                # Sample model 1
+│   │   ├── Mao/                 # Sample model 2
+│   │   └── Hiyori/              # Sample model 3
 │   ├── components/
-│   │   └── Live2DViewer.tsx      # React component
+│   │   └── Live2DViewer.tsx     # React component (with ref)
 │   ├── lib/
-│   │   ├── framework/            # Cubism Framework (included)
-│   │   └── live2d/               # Integration layer
-│   │       ├── LAppDefine.ts     # Configuration
-│   │       ├── LAppModel.ts      # Model class
+│   │   ├── framework/           # Cubism Framework (included)
+│   │   └── live2d/              # Integration layer
+│   │       ├── LAppDefine.ts    # Configuration
+│   │       ├── LAppModel.ts     # Model class
 │   │       ├── LAppLive2DManager.ts
-│   │       ├── ModelLoader.ts    # Secure asset loading
+│   │       ├── ModelLoader.ts   # Secure asset loading
 │   │       └── ...
 │   └── App.tsx
 ├── docs/
-│   └── MODEL_SECURITY.md         # Security guide
+│   └── MODEL_SECURITY.md        # Security guide
 └── package.json
 ```
 
@@ -76,21 +87,84 @@ function App() {
 }
 ```
 
-### With Custom Props
+### With Model Switching (using ref)
 
 ```tsx
-<Live2DViewer 
-  width="800px" 
-  height="600px" 
-  className="my-live2d-canvas" 
-/>
+import { useRef } from 'react';
+import { Live2DViewer, Live2DViewerHandle } from './components/Live2DViewer';
+
+function App() {
+  const viewerRef = useRef<Live2DViewerHandle>(null);
+
+  return (
+    <div>
+      <button onClick={() => viewerRef.current?.changeModel(0)}>Haru</button>
+      <button onClick={() => viewerRef.current?.changeModel(1)}>Mao</button>
+      <button onClick={() => viewerRef.current?.nextModel()}>Next</button>
+      
+      <Live2DViewer 
+        ref={viewerRef}
+        onModelChange={(index) => console.log('Model changed:', index)}
+      />
+    </div>
+  );
+}
+```
+
+### Live2DViewerHandle API
+
+| Method | Description |
+|--------|-------------|
+| `changeModel(index)` | Switch to model at specified index |
+| `nextModel()` | Switch to next model in list |
+| `getCurrentModelIndex()` | Get current model index |
+
+## 🛠️ Model Organizer Script
+
+Convert Cubism Editor exports to web-ready format automatically.
+
+### Usage
+
+```bash
+# Basic usage
+node scripts/organize-model.js <input-folder> [output-folder]
+
+# With auto-fix for common issues
+node scripts/organize-model.js <input-folder> [output-folder] --fix
+```
+
+### Example
+
+```bash
+# Convert Cubism Editor export
+node scripts/organize-model.js src/assets/mao_pro_en src/assets/Mao --fix
+```
+
+### What it does
+
+| Feature | Description |
+|---------|-------------|
+| **Extract runtime files** | Copies only web-needed files from `runtime/` folder |
+| **Remove Editor files** | Excludes `.cmo3`, `.can3` (Cubism Editor files) |
+| **Clean system files** | Removes `.DS_Store`, `Thumbs.db`, etc. |
+| **Fix HitAreas** | Auto-fills empty HitArea names (`--fix`) |
+| **Fix Motion groups** | Renames empty `""` groups to `"TapBody"` (`--fix`) |
+| **Rename model3.json** | Matches filename to folder name |
+
+### Before & After
+
+```
+# Input (Cubism Editor export)        # Output (Web-ready)
+mao_pro_en/                           Mao/
+├── mao_pro_t06.cmo3    ❌ removed    ├── Mao.model3.json
+├── mao_pro_t06.can3    ❌ removed    ├── mao_pro.moc3
+├── ReadMe.txt          ❌ removed    ├── mao_pro.4096/
+└── runtime/            → extracted   ├── expressions/
+    ├── mao_pro.model3.json           └── motions/
+    └── ...
 ```
 
 ## 🔒 Security Considerations
-
-This project implements a secure approach to loading model assets that prevents direct URL access.
-
-### Current Implementation
 
 Models are stored in `src/assets/` instead of `public/`, using Vite's asset import system:
 
@@ -100,20 +174,7 @@ Models are stored in `src/assets/` instead of `public/`, using Vite's asset impo
 | Direct URL access possible | Hashed filenames in build |
 | Easy to guess URLs | URLs like `Haru-B_Kvcr7l.moc3` |
 
-**How it works:**
-
-```typescript
-// ModelLoader.ts uses import.meta.glob
-const modelFiles = import.meta.glob('/src/assets/**/*', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
-```
-
 ### Security Levels
-
-For production applications with user-uploaded models, consider these options:
 
 | Level | Method | Best For |
 |-------|--------|----------|
@@ -129,8 +190,8 @@ For production applications with user-uploaded models, consider these options:
 Edit `src/lib/live2d/LAppDefine.ts` to customize:
 
 ```typescript
-// Models to load
-export const ModelDir: string[] = ['Haru'];
+// Models to load (buttons auto-generated for each)
+export const ModelDir: string[] = ['Haru', 'Mao', 'Hiyori'];
 
 // Motion groups
 export const MotionGroupIdle = 'Idle';
@@ -146,12 +207,24 @@ export const DebugLogEnable = true;
 
 ## 🎨 Adding New Models
 
+### Method 1: From Cubism Editor Export
+
+```bash
+# 1. Run organizer script
+node scripts/organize-model.js src/assets/your_model_export src/assets/YourModel --fix
+
+# 2. Add to LAppDefine.ts
+export const ModelDir: string[] = ['Haru', 'Mao', 'Hiyori', 'YourModel'];
+
+# 3. Restart dev server
+npm run dev
+```
+
+### Method 2: Manual Addition
+
 1. **Add model files** to `src/assets/YourModel/`
-2. **Update configuration** in `LAppDefine.ts`:
-   ```typescript
-   export const ModelDir: string[] = ['Haru', 'YourModel'];
-   ```
-3. **Restart dev server** - Vite will pick up new assets
+2. **Update configuration** in `LAppDefine.ts`
+3. **Restart dev server**
 
 ### Model File Requirements
 
@@ -190,11 +263,8 @@ Requires WebGL 1.0 or 2.0 support.
 ### Performance Tips
 
 - Models with fewer polygons render faster
-- Reduce texture sizes for mobile
-- Disable physics for low-end devices:
-  ```typescript
-  // In LAppModel.ts, skip physics loading
-  ```
+- Reduce texture sizes for mobile (2048 → 1024)
+- Disable physics for low-end devices
 
 ## 📚 References
 
